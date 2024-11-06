@@ -1,0 +1,212 @@
+---
+title: "Assignment 2 Cultural Ane Lodahl"
+output: html_document
+date: "2024-10-31"
+---
+
+Assignment 2 
+
+Part 1 - Margarine and divorce
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(dslabs)
+
+```
+
+
+```{r}
+data("divorce_margarine")
+```
+
+
+```{r}
+df_div_marg <- divorce_margarine
+```
+
+
+```{r}
+ggplot(df_div_marg, 
+       aes(x = margarine_consumption_per_capita, 
+           y = divorce_rate_maine, fill = margarine_consumption_per_capita)) +
+  geom_point(size = 4, shape = 22, color = "black") + 
+  scale_fill_gradient(low = "#CC0099", high = "#0000FF") +
+  theme_bw() + 
+  labs(x = "Margarine consumption(per capita)", 
+       y = "Divorce rate in Maine") +
+  ggtitle("Impact of margarine consumption on divorce rate in Maine")
+
+```
+
+```{r}
+m5 <- lm(divorce_rate_maine ~ margarine_consumption_per_capita, df_div_marg)
+summary(m5)
+```
+
+so when the margarine consumption increases by 1 unit, the divorce rate increases by 0.20???
+
+Would  an  increase  in  the preference for margarine lead to skyrocketing divorce rate??
+Unlikely, but according to this data maybe, small dataset? unknown factors 
+
+
+Part 2
+```{r}
+#install.packages('car')
+library(car)
+```
+
+```{r}
+
+df_vocab <- data("GSSvocab")
+
+df_vocab <- GSSvocab
+```
+
+```{r}
+ 
+#only showing year 1978 and removing missing values
+
+df_vocab_1978 <- df_vocab %>% #filter for year 1978
+  filter(year == 1978)
+
+df_vocab_1978 <- na.omit(df_vocab_1978) #remove missing values
+
+df_vocab_1978
+```
+Is a person’s  score on the vocabulary test  (‘vocab’)significantly impacted by their level  of education (‘educ’)?
+
+```{r}
+
+#influence of education on vocabulary
+ggplot(df_vocab_1978, 
+       aes(x = educ, 
+           y = vocab, color = educ)) +
+  geom_point(shape = 8)+ 
+  scale_color_gradientn(colors = rainbow(7)) +
+  theme_minimal() + 
+  labs(x = "Education level", 
+       y = "Vocabulary score") +
+  ggtitle("Impact of education level on vocabulary score")
+
+```
+
+```{r}
+m6 <- lm(vocab ~ educ, df_vocab_1978)
+summary(m6)
+```
+From the plot it appears there is a small positive correlation between education and vocaulary score. When education increases, the lowest and highest vocabulary score also increases. However, there is a great amount of overlap of vocabulary at the different levels of eduction, suggesting that it is not possible to predict vocabulary score based entirely on education level.
+
+From the model it appears there is a significant positive relationship between education and vocabulary, with a p value of less than 2e-16 and a standard error at 0.02. When education increases by 1 unit, vocabulary increases by 0.39 units
+
+```{r}
+
+# install.packages("jpeg")
+# library(jpeg)
+# library(grid)
+
+img_wugs <- readJPEG("C:/Users/anelo/OneDrive/Cogsci/Cultural data science/wug birds.jpg")
+
+#the effect of nativeBorn on vocab
+
+# ggplot(df_vocab_1978, 
+#        aes(x = nativeBorn, 
+#            y = vocab)) +
+#   geom_boxplot()+
+#   theme_gray() + 
+#   labs(x = "Native speaker", 
+#        y = "Vocabulary score") +
+#   ggtitle("Impact of being a native speaker on vocabulary score")
+
+
+
+# Create the plot with the background image
+ggplot() +  # empty ggplot object
+  # background image
+  annotation_custom(
+    rasterGrob(img_wugs, width = unit(1, "npc"), height = unit(1, "npc")),
+    xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf
+  ) +
+  
+  # Add the boxplot
+  geom_boxplot(data = df_vocab_1978, aes(x = nativeBorn, y = vocab), 
+               fill = "lightblue", color = "black", outlier.size = 2, size = 0.8) +  
+  
+  # theme and labels
+  theme_gray() + 
+  labs(x = "Native Speaker", 
+       y = "Vocabulary Score") +
+  ggtitle("Impact of Being a Native Speaker on Vocabulary Score") +
+  
+  # Add a semi-transparent rectangle
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = 0.5, fill = "white") +
+  
+  #  the theme
+  theme(
+    plot.background = element_blank(),  # Remove default plot background
+    panel.background = element_blank()   # Remove panel background
+  )
+
+
+
+
+m7 <- lm(vocab ~ educ + nativeBorn, df_vocab_1978)
+summary(m7)
+```
+
+It appears from the plot that the mean vocabulary score is higher for native speakers than non-native speakers. The difference between the non-native speakers with the lowest and the highest vocabulary score is larger than the difference for native speakers, which is very narrow. Some non-native speakers appear to have a higher score than native speakers.
+
+From the model summary it appears that there is a significant positive relationship between being a native speaker and vocabulary score. On average, native speakers have a vocabulary score that is 0.65 units higher than non-native speakers, with a p-value of 0.0015 and a standard error of 0.21.
+
+
+
+```{r}
+#effect of nativeBorn on education
+
+
+
+
+ggplot(df_vocab_1978, 
+       aes(x = nativeBorn, 
+           y = educ, 
+           fill = nativeBorn)) +
+  geom_boxplot() + 
+  theme_classic() + 
+  labs(x = "Native speaker", 
+       y = "Education level") +
+  ggtitle("Impact of being a native speaker on education level") +
+  scale_fill_manual(values = c("#FF6600", "#339900")) # Specify colors for each level
+
+
+m8 <- lm(educ ~ nativeBorn, df_vocab_1978)
+summary(m8)
+
+```
+From the plot it appears the mean of education level is almost exactly the same for native and non-native speakers. The range appear slightly bigger for non-native speakers, suggesting a possibly bigger variation of educatio level, however the difference appear to small to conclude anything.
+From the model it appears there is no significant relationship between being a native speaker and your education level, with a p level at 0.83 and a standard error at 0.33. Hence, the model suggest that your level of education does not depend on whether you are a native speaker or not
+
+
+As you have the possibility to have more education as you are older(e.g. a 8 year old can not have 10 years of education), it could be interesting to see if age affects if and how the impact of being a native speaker changes depending on age. 
+
+```{r}
+#added interaction to investigate whether age has an effect on the influence being a native speaker has on vocabulary
+m9 <- lm(educ ~ nativeBorn * age, df_vocab_1978)
+summary(m9)
+```
+Based on the model output it appears that the interaction between being a native speaker and age is not significant, with a p value at 0.46, and hence age does not affect whether being a native speaker has an impact on education level. 
+
+
+To test which model is best for predicting one of the given outcomes, vocabulary score and education, we can use anova.
+```{r}
+#anova for models with vocab as outcome
+anova(m6, m7)
+
+#anova for models with educ as outcome
+anova(m8, m9)
+```
+When comparing model 6 and model 7, the p value is 0.0016, suggesting that the second model with both education and nativeborn is significantly better for explaining the variance of vocabulary than the first model with only education as a predictor, m6. As the relationships between both education and vacobulary and nativeborn and vocabulary are significant, the second model, m7, is both better for explaining the variance in vocabulary and for predicting new data.
+
+When comparing model 8 and model 9, the p value is 2.2e-16, suggesting that the second model with both nativeborn and age explains the variance in education level better than the model with only nativeborn as a predictor. However, as seen from the model output for model 9, the interaction between nativeborn and age is not significant and hence, the model with the interaction, m9, is better for explaining the data while the model with only nativeborn as a predictor, m8, is better for predicting new data. 
+
+
